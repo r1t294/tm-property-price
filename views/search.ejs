@@ -1,0 +1,91 @@
+<%- include('layout.ejs'); %>
+    <script>
+        function myFunction() {
+            var x = document.getElementById("spinner");
+            var y = document.getElementById("priceButton");
+            var z = document.getElementById("alert")
+            if (x.style.display === "none") {
+                x.style.display = "block";
+                y.style.display = "none";
+                z.style.display = "none";
+            } else {
+                x.style.display = "none";
+                y.style.display = "block";
+                z.style.display = "block";
+            }
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('.dropdown').each(function (key, dropdown) {
+                var $dropdown = $(dropdown);
+                $dropdown.find('.dropdown-menu a').on('click', function () {
+                    $dropdown.find('button').text($(this).text()).append(' <span class="caret"></span>');
+                });
+            });
+        });
+    </script>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h2 class='text-center'><a href="/"><img src="./images/home_icon.png" width="80" height="80" alt=""></a>
+                    <b>TradeMe Property Price</b>
+                </h2>
+                <br></br>
+                <div class="card text-center bg-light">
+                    <h5 class="card-header">Price Search</h5>
+                    <div class="card-body">
+                        <p>Enter the TradeMe listing URL below and select a Price Resolution from the dropdown menu. The
+                            Price Resolution value allows you to narrow down the listing price to the selected
+                            resolution value. A low resolution value such as $1K will take longer to process
+                            (>45<small>s</small>) as it returns the price with the thousandth value.</p>
+                        <form class="form-horizontal" method="post" action="/search">
+                            <div class="form-group">
+                                <div class="cols-sm-10">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-envelope fa"
+                                                aria-hidden="true"></i></span>
+                                        <input type="text" class="form-control w-auto" name="property_url"
+                                            id="property_url" placeholder="Enter TradeMe Listing URL" />
+                                        <select class="form-select" aria-label="Default select example"
+                                            name="resolution" id="resolution">
+                                            <option value="0" selected>Price Resolution (Default $50K)</option>
+                                            <option value="1">$10K</option>
+                                            <option value="2">$5K</option>
+                                            <option value="3">$1K</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <% if(alert){ %>
+                                <div id="alert" style="display:block">
+                                    <h6 class="text-danger">
+                                        <%= alert %>
+                                    </h6>
+                                </div>
+                                <% } %>
+                                    <br>
+                                    <div class="form-group ">
+                                        <div class="d-grid gap-2">
+                                            <button id="priceButton" type="submit" style="display:block"
+                                                class="btn btn-primary btn-lg btn-block" onclick="myFunction()">Get
+                                                Price</button>
+                                        </div>
+                                    </div>
+                        </form>
+                        <br>
+                        <div id="spinner" style="display:none">
+                            <div class="d-flex justify-content-center">
+                                <div class="spinner-border text-primary" role="status"
+                                    style="width: 3rem; height: 3rem;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </body>
+
+    </html>
