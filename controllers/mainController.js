@@ -1,4 +1,7 @@
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const csv = require('fast-csv');
+
 
 // Search stages to reduce the number of searches.
 const stageMap = {
@@ -42,16 +45,27 @@ const mainSearchFunction = async (req, res) => {
     return res.redirect("/?valid=noUrl");
   } else {
     var urlSegments = property_url.split('/');
-    var propertyID = urlSegments[urlSegments.length - 1]
+    var propertyID = urlSegments[urlSegments.length - 1];
     var propertyType = urlSegments[5];
     var searchUrl = "https://www.trademe.co.nz/a/property/" + propertyType + "/search?search_string=" + propertyID + "*";
+    var existing = await findExisting(propertyID);
+  
     console.time("Time Taken");
-    finalPrice = await findProperty(property_url, searchUrl, resolution);
+
+    if (existing != null) { // if already searched.
+      finalPrice = "$" + new Intl.NumberFormat('en-NZ', { style: 'decimal' }).format(existing[1]);
+      console.timeEnd("Time Taken");
+      return res.render('property', { price: finalPrice, address: existing[2], listing_url: property_url });
+    } else {
+      finalPrice = await findProperty(property_url, searchUrl, resolution);
+    }
+
     console.timeEnd("Time Taken");
 
     if (finalPrice == 0) {
       return res.render("search", { alert: "Something went wrong, Please check URL" });
     } else {
+      await addExisting(propertyID);
       finalPrice = "$" + new Intl.NumberFormat('en-NZ', { style: 'decimal' }).format(finalPrice);
       return res.render('property', { price: finalPrice, address: property_address, listing_url: property_url });
     }
@@ -68,8 +82,8 @@ async function findProperty(propertyUrl, searchUrl, priceResolution) {
   var adjustedSearchUrl = searchUrl + "&price_min=" + price;
   var recentAdjust = true;
   var currentStage = stageMap['s1'];
-  finalPrice = 0;
   const browser = await puppeteer.launch();
+  finalPrice = 0;
 
   // Just obtaining the address here.
   const page = await browser.newPage();
@@ -165,6 +179,29 @@ async function findProperty(propertyUrl, searchUrl, priceResolution) {
   //-----------------------------------------------------------------------------------------------------
   await browser.close();
   return price;
+}
+
+async function findExisting(propertyID) {
+  return new Promise((resolve, reject) => {
+    var data = null;
+    csv
+      .parseFile("./data.csv")
+      .on("error", reject)
+      .on("data", (row) => {
+        if (row[0] == propertyID) {
+          data = row;
+        }
+      })
+      .on("end", () => {
+        resolve(data);
+      });
+  });
+}
+
+async function addExisting(propertyID) {
+  fs.appendFile('./data.csv', "\n"+propertyID+","+finalPrice+","+'"'+property_address+'"', function (err) {
+    if (err) return console.log(err);
+ });
 }
 
 function getResolution(selectedRes) {

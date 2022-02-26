@@ -12,6 +12,7 @@
   "dependencies": {
     "ejs": "^3.1.6",
     "express": "^4.17.3",
+    "fast-csv": "^4.3.6",
     "open-cli": "^7.0.1",
     "puppeteer": "^13.3.2"
   }
