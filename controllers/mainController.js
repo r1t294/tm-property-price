@@ -15,6 +15,7 @@ const stageMap = {
 }
 var finalPrice = 0;
 var property_address = '';
+var searchResolution = '';
 
 // main page view
 const mainView = (req, res) => {
@@ -37,6 +38,7 @@ const loadingView = (req, res) => {
 const mainSearchFunction = async (req, res) => {
 
   const { property_url, resolution } = req.body;
+  searchResolution = getResolution(resolution);
   //---------------------------------------------------------------
   console.log("Selected Resolution: " + getResolution(resolution));
   //---------------------------------------------------------------
@@ -188,7 +190,7 @@ async function findExisting(propertyID) {
       .parseFile("./data.csv")
       .on("error", reject)
       .on("data", (row) => {
-        if (row[0] == propertyID) {
+        if (row[0] == propertyID && row[2] == searchResolution) {
           data = row;
         }
       })
@@ -199,7 +201,7 @@ async function findExisting(propertyID) {
 }
 
 async function addExisting(propertyID) {
-  fs.appendFile('./data.csv', "\n"+propertyID+","+finalPrice+","+'"'+property_address+'"', function (err) {
+  fs.appendFile('./data.csv', "\n"+propertyID+","+finalPrice+","+searchResolution+","+'"'+property_address+'"', function (err) {
     if (err) return console.log(err);
  });
 }
